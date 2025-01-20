@@ -6,7 +6,7 @@ pub mod ERC721xETH {
     use starknet::{
         ClassHash, ContractAddress, EthAddress,
         storage::{StoragePointerReadAccess, StoragePointerWriteAccess},
-        syscalls::send_message_to_l1_syscall
+        syscalls::send_message_to_l1_syscall,
     };
     use openzeppelin::{
         access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE},
@@ -14,9 +14,9 @@ pub mod ERC721xETH {
         security::{pausable::PausableComponent, initializable::InitializableComponent},
         token::{
             erc721::ERC721Component, erc721::extensions::ERC721EnumerableComponent,
-            common::erc2981::{DefaultConfig, ERC2981Component}
+            common::erc2981::{DefaultConfig, ERC2981Component},
         },
-        upgrades::{interface::IUpgradeable, UpgradeableComponent}
+        upgrades::{interface::IUpgradeable, UpgradeableComponent},
     };
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
@@ -25,7 +25,7 @@ pub mod ERC721xETH {
     component!(path: InitializableComponent, storage: initializable, event: InitializableEvent);
     component!(path: AccessControlComponent, storage: accesscontrol, event: AccessControlEvent);
     component!(
-        path: ERC721EnumerableComponent, storage: erc721_enumerable, event: ERC721EnumerableEvent
+        path: ERC721EnumerableComponent, storage: erc721_enumerable, event: ERC721EnumerableEvent,
     );
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
     component!(path: ERC2981Component, storage: erc2981, event: ERC2981Event);
@@ -82,7 +82,7 @@ pub mod ERC721xETH {
         upgradeable: UpgradeableComponent::Storage,
         #[substorage(v0)]
         erc2981: ERC2981Component::Storage,
-        l1_address: EthAddress
+        l1_address: EthAddress,
     }
 
     #[event]
@@ -108,7 +108,7 @@ pub mod ERC721xETH {
 
     #[constructor]
     fn constructor(
-        ref self: ContractState, default_admin: ContractAddress, royalty_admin: ContractAddress
+        ref self: ContractState, default_admin: ContractAddress, royalty_admin: ContractAddress,
     ) {
         self.erc2981.initializer(royalty_admin, 750);
 
@@ -134,9 +134,7 @@ pub mod ERC721xETH {
     #[abi(per_item)]
     impl ExternalImpl of ExternalTrait {
         #[external(v0)]
-        fn initialize(
-            ref self: ContractState, name: ByteArray, symbol: ByteArray, uri: ByteArray,
-        ) {
+        fn initialize(ref self: ContractState, name: ByteArray, symbol: ByteArray, uri: ByteArray) {
             self.accesscontrol.assert_only_role(DEFAULT_ADMIN_ROLE);
             self.initializable.initialize();
             self.accesscontrol.initializer();

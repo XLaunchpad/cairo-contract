@@ -3,25 +3,30 @@
 
 #[starknet::contract]
 pub mod XLaunchpad {
-    use starknet::storage::{Map,StoragePathEntry, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess, StoragePointerWriteAccess};
+    use starknet::storage::{
+        Map, StoragePathEntry, StorageMapReadAccess, StorageMapWriteAccess,
+        StoragePointerReadAccess, StoragePointerWriteAccess,
+    };
     use OwnableComponent::InternalTrait;
     use starknet::{
-        ClassHash, ContractAddress, EthAddress, SyscallResultTrait, syscalls::{deploy_syscall, send_message_to_l1_syscall},
-        get_caller_address, get_contract_address
+        ClassHash, ContractAddress, EthAddress, SyscallResultTrait,
+        syscalls::{deploy_syscall, send_message_to_l1_syscall}, get_caller_address,
+        get_contract_address,
     };
     use openzeppelin::{
-        access::ownable::OwnableComponent, upgrades::{interface::IUpgradeable, UpgradeableComponent}
+        access::ownable::OwnableComponent,
+        upgrades::{interface::IUpgradeable, UpgradeableComponent},
     };
     use x_launchpad::interfaces::{
         i_erc721_x_eth::{IERC721xETHDispatcher, IERC721xETHDispatcherTrait},
-        i_erc1155_x_eth::{IERC1155xETHDispatcher, IERC1155xETHDispatcherTrait}
+        i_erc1155_x_eth::{IERC1155xETHDispatcher, IERC1155xETHDispatcherTrait},
     };
     use alexandria_bytes::{Bytes, BytesTrait};
 
     const ERC721BASE_CLASS_HASH: felt252 =
-        0x04ccd3f5efd0d318ab8deb45d2f84353a609c69ac3367df2a4017e36f42689c6;
+        0x009d187a50c941594675a1a5927ff5a363e7885f4fbab20415c171349dc65502;
     const ERC1155BASE_CLASS_HASH: felt252 =
-        0x0443aff79d8053fcce8cb3c88c95ef943cd1eb6dafc7bdb27d6d01b7cb668ecc;
+        0x068fb95e3b3d0e5cafdd49c7b6db48ef1f45bc0d8c8c7be25a27a48f86ffc8e3;
     const STORE_ADDRESSES_MESSAGE: felt252 = 0;
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
@@ -54,7 +59,7 @@ pub mod XLaunchpad {
     #[derive(Drop, starknet::Event)]
     struct NFTLaunchedOnSN {
         #[key]
-        nft_address: ContractAddress
+        nft_address: ContractAddress,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -62,7 +67,7 @@ pub mod XLaunchpad {
         #[key]
         l1_nft_address: EthAddress,
         #[key]
-        l2_nft_address: ContractAddress
+        l2_nft_address: ContractAddress,
     }
 
     #[storage]
@@ -73,7 +78,7 @@ pub mod XLaunchpad {
         upgradeable: UpgradeableComponent::Storage,
         x_launchpad_l1_address: felt252,
         l1_l2_address_map: Map<EthAddress, ContractAddress>,
-        l2_l1_address_map: Map<ContractAddress, EthAddress>
+        l2_l1_address_map: Map<ContractAddress, EthAddress>,
     }
 
     #[constructor]
@@ -96,7 +101,7 @@ pub mod XLaunchpad {
             name: ByteArray,
             symbol: ByteArray,
             uri: ByteArray,
-            nft_type: NFTType
+            nft_type: NFTType,
         ) -> ContractAddress {
             let caller = get_caller_address();
             let address_this = get_contract_address();
@@ -126,7 +131,7 @@ pub mod XLaunchpad {
                     IERC1155xETHDispatcher { contract_address: erc1155_base_address }
                         .initialize(name, symbol, uri);
                     erc1155_base_address
-                }
+                },
             };
             nft_contract_address
         }
@@ -141,9 +146,11 @@ pub mod XLaunchpad {
         uri_1: Bytes,
         uri_2: Bytes,
         nft_type: NFTType,
-        l1_address: EthAddress
+        l1_address: EthAddress,
     ) {
-        assert(from_address == self.x_launchpad_l1_address.read(), 'Caller not launchpad L1 address');
+        assert(
+            from_address == self.x_launchpad_l1_address.read(), 'Caller not launchpad L1 address',
+        );
         let mut uri: Bytes = uri_1.clone();
         uri.concat(@uri_2);
         let l2_address = self.launch_x_nft(name.into(), symbol.into(), uri.into(), nft_type);
@@ -155,7 +162,9 @@ pub mod XLaunchpad {
         STORE_ADDRESSES_MESSAGE.serialize(ref message_payload);
         l1_address.serialize(ref message_payload);
         l2_address.serialize(ref message_payload);
-        let result = send_message_to_l1_syscall(self.x_launchpad_l1_address.read(), message_payload.span());
+        let result = send_message_to_l1_syscall(
+            self.x_launchpad_l1_address.read(), message_payload.span(),
+        );
         assert(result.is_ok(), 'MESSAGE_SEND_FAIILED');
     }
 
@@ -164,9 +173,11 @@ pub mod XLaunchpad {
         ref self: ContractState,
         from_address: felt252,
         l1_address: EthAddress,
-        l2_address: ContractAddress
+        l2_address: ContractAddress,
     ) {
-        assert(from_address == self.x_launchpad_l1_address.read(), 'Caller not launchpad L1 address');
+        assert(
+            from_address == self.x_launchpad_l1_address.read(), 'Caller not launchpad L1 address',
+        );
         self.l1_l2_address_map.entry(l1_address).write(l2_address);
         self.l2_l1_address_map.entry(l2_address).write(l1_address);
     }

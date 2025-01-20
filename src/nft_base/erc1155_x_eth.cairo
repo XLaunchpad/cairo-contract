@@ -5,14 +5,14 @@
 pub mod ERC1155xETH {
     use starknet::{
         ClassHash, ContractAddress, storage::{StoragePointerReadAccess, StoragePointerWriteAccess},
-        syscalls::send_message_to_l1_syscall
+        syscalls::send_message_to_l1_syscall,
     };
     use openzeppelin::{
         access::accesscontrol::{AccessControlComponent, DEFAULT_ADMIN_ROLE},
         introspection::src5::SRC5Component,
         security::{pausable::PausableComponent, initializable::InitializableComponent},
         token::{erc1155::ERC1155Component, common::erc2981::{DefaultConfig, ERC2981Component}},
-        upgrades::{interface::IUpgradeable, UpgradeableComponent}
+        upgrades::{interface::IUpgradeable, UpgradeableComponent},
     };
 
     component!(path: ERC1155Component, storage: erc1155, event: ERC1155Event);
@@ -70,7 +70,7 @@ pub mod ERC1155xETH {
         #[substorage(v0)]
         erc2981: ERC2981Component::Storage,
         name: ByteArray,
-        symbol: ByteArray
+        symbol: ByteArray,
     }
 
     #[event]
