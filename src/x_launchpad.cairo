@@ -20,6 +20,7 @@ pub mod XLaunchpad {
     use x_launchpad::interfaces::{
         i_erc721_x_eth::{IERC721xETHDispatcher, IERC721xETHDispatcherTrait},
         i_erc1155_x_eth::{IERC1155xETHDispatcher, IERC1155xETHDispatcherTrait},
+        i_x_launchpad::NFTType,
     };
     use alexandria_bytes::{Bytes, BytesTrait};
 
@@ -40,12 +41,6 @@ pub mod XLaunchpad {
     // Internal
     impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
     impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
-
-    #[derive(Drop, Serde)]
-    enum NFTType {
-        ERC721,
-        ERC1155,
-    }
 
     #[event]
     #[derive(Drop, starknet::Event)]
